@@ -26,6 +26,11 @@ module.exports = {
   rules: {
       "prettier/prettier": "error",
       "react/jsx-filename-extension": ["error", { extensions: [".js", ".jsx"] }],
-      "react/jsx-indent": [2, 2]
+      "react/jsx-indent": [2, 2],
+      "react/jsx-one-expresion-per-line": 0,
+      "arrow-parens": 0,
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      'comma-dangle':0
     },
 };
