@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 function App() {
   const [tag, setTag] = useState([]);
@@ -7,11 +7,24 @@ function App() {
   const handleSubmit = useCallback(
     e => {
       e.preventDefault();
-      setTag([...tag, newTag]);
+      setTag([...tag, { tagName: newTag, tagId: '' }]);
       setNewTag('');
     },
     [newTag, tag]
   );
+
+  useEffect(() => {
+    const tagStorage = localStorage.getItem('tag');
+
+    if (tagStorage) {
+      setTag(JSON.parse(tagStorage));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tag', JSON.stringify(tag));
+  }, [tag]);
+
   return (
     <>
       <small>
@@ -29,7 +42,7 @@ function App() {
       <ul>
         Tags
         {tag.map(t => (
-          <li key={t}>{t}</li>
+          <li key={t.tagName}>{t.tagName}</li>
         ))}
       </ul>
       <form onSubmit={handleSubmit}>
