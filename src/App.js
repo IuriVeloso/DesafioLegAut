@@ -23,20 +23,25 @@ function App() {
     if (document.selection) {
       selected = document.selection.createRange().text;
     }
-    for (
-      let i = selected.focusOffset;
-      selected.anchorNode.nodeValue[i] !== ' ';
-      i += 1
-    ) {
-      selectionAfter += selected.anchorNode.nodeValue[i];
+    if (selected.anchorNode.nodeValue[selected.focusOffset - 1] !== ' ') {
+      for (
+        let i = selected.focusOffset;
+        selected.anchorNode.nodeValue[i] !== ' ';
+        i += 1
+      ) {
+        selectionAfter += selected.anchorNode.nodeValue[i];
+      }
     }
-    for (
-      let i = selected.anchorOffset - 1;
-      selected.anchorNode.nodeValue[i] !== ' ';
-      i -= 1
-    ) {
-      selectionBefore = selected.anchorNode.nodeValue[i] + selectionBefore;
+    if (selected.anchorNode.nodeValue[selected.anchorOffset] !== ' ') {
+      for (
+        let i = selected.anchorOffset - 1;
+        selected.anchorNode.nodeValue[i] !== ' ';
+        i -= 1
+      ) {
+        selectionBefore = selected.anchorNode.nodeValue[i] + selectionBefore;
+      }
     }
+
     console.log(selectionBefore + selected.toString() + selectionAfter);
   };
 
