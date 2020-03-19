@@ -37,7 +37,7 @@ function App() {
     ) {
       selectionBefore = selected.anchorNode.nodeValue[i] + selectionBefore;
     }
-    console.log(selectionBefore, selected.toString(), selectionAfter);
+    console.log(selectionBefore + selected.toString() + selectionAfter);
   };
 
   useEffect(() => {
