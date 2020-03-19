@@ -2,12 +2,15 @@ import React, { useState, useCallback, useEffect } from 'react';
 
 function App() {
   const [tag, setTag] = useState([]);
-  const [newTag, setNewTag] = useState('');
+  const [newTag, setNewTag] = useState([]);
+  const [newSelection, setNewSelection] = useState('');
+  const [post, setPost] = useState([]);
+  const [nextTag, setNextTag] = useState('');
 
   const handleSubmit = useCallback(
     e => {
       e.preventDefault();
-      setTag([...tag, { tagName: newTag, tagId: '' }]);
+      setTag([...tag, newTag]);
       setNewTag('');
     },
     [newTag, tag]
@@ -42,8 +45,23 @@ function App() {
       }
     }
 
-    console.log(selectionBefore + selected.toString() + selectionAfter);
+    const selection = selectionBefore + selected.toString() + selectionAfter;
+
+    setNewSelection(selection);
   };
+
+  useEffect(() => {
+    setPost([
+      ...post,
+      [
+        {
+          tag: nextTag,
+          note: newSelection
+        }
+      ]
+    ]);
+    console.log(post);
+  }, [newSelection]);
 
   useEffect(() => {
     const tagStorage = localStorage.getItem('tag');
@@ -83,8 +101,8 @@ function App() {
       <ul>
         Tags
         {tag.map(t => (
-          <button type="button" onClick={handleSelect} key={t.tagName}>
-            {t.tagName}
+          <button type="button" onClick={() => setNextTag(t)} key={t}>
+            {t}
           </button>
         ))}
       </ul>
