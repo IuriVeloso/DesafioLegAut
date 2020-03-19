@@ -13,6 +13,33 @@ function App() {
     [newTag, tag]
   );
 
+  const handleSelect = () => {
+    let selected = null;
+    let selectionAfter = '';
+    let selectionBefore = '';
+    if (window.getSelection()) {
+      selected = window.getSelection();
+    }
+    if (document.selection) {
+      selected = document.selection.createRange().text;
+    }
+    for (
+      let i = selected.focusOffset;
+      selected.anchorNode.nodeValue[i] !== ' ';
+      i += 1
+    ) {
+      selectionAfter += selected.anchorNode.nodeValue[i];
+    }
+    for (
+      let i = selected.anchorOffset - 1;
+      selected.anchorNode.nodeValue[i] !== ' ';
+      i -= 1
+    ) {
+      selectionBefore = selected.anchorNode.nodeValue[i] + selectionBefore;
+    }
+    console.log(selectionBefore, selected.toString(), selectionAfter);
+  };
+
   useEffect(() => {
     const tagStorage = localStorage.getItem('tag');
 
@@ -27,7 +54,15 @@ function App() {
 
   return (
     <>
-      <small>
+      <div
+        onMouseUp={handleSelect}
+        type="text"
+        style={{ height: '100px', width: '800px', marginBottom: '50px' }}
+        margin-bottom="50px"
+        role="textbox"
+        tabIndex="0"
+        readOnly
+      >
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua. Donec ac odio tempor
         orci dapibus ultrices in iaculis. Sit amet nulla facilisi morbi tempus
@@ -38,11 +73,14 @@ function App() {
         commodo odio aenean. At tempor commodo ullamcorper a lacus vestibulum
         sed. Ac turpis egestas maecenas pharetra. Nisi vitae suscipit tellus
         mauris a diam.
-      </small>
+      </div>
+
       <ul>
         Tags
         {tag.map(t => (
-          <li key={t.tagName}>{t.tagName}</li>
+          <button type="button" onClick={handleSelect} key={t.tagName}>
+            {t.tagName}
+          </button>
         ))}
       </ul>
       <form onSubmit={handleSubmit}>
