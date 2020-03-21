@@ -1,3 +1,4 @@
+/* eslint-disable object-curly-newline */
 import React, { useState, useCallback, useEffect } from 'react';
 
 function App() {
@@ -26,7 +27,10 @@ function App() {
     if (document.selection) {
       selected = document.selection.createRange().text;
     }
-    if (selected.anchorNode.nodeValue[selected.focusOffset - 1] !== ' ') {
+    if (
+      selected.anchorNode.nodeValue[selected.focusOffset - 1] !== ' '
+      || selected.anchorNode.nodeValue[selected.focusOffset] !== '.'
+    ) {
       for (
         let i = selected.focusOffset;
         selected.anchorNode.nodeValue[i] !== ' ';
@@ -35,7 +39,10 @@ function App() {
         selectionAfter += selected.anchorNode.nodeValue[i];
       }
     }
-    if (selected.anchorNode.nodeValue[selected.anchorOffset] !== ' ') {
+    if (
+      selected.anchorNode.nodeValue[selected.anchorOffset] !== ' '
+      || selected.anchorNode.nodeValue[selected.anchorOffset - 1] !== '.'
+    ) {
       for (
         let i = selected.anchorOffset - 1;
         selected.anchorNode.nodeValue[i] !== ' ';
@@ -46,21 +53,19 @@ function App() {
     }
 
     const selection = selectionBefore + selected.toString() + selectionAfter;
-
+    console.log(selected.anchorNode.nodeValue[selected.anchorOffset]);
+    console.log(selection);
     setNewSelection(selection);
   };
 
   useEffect(() => {
     setPost([
       ...post,
-      [
-        {
-          tag: nextTag,
-          note: newSelection
-        }
-      ]
+      {
+        tag: nextTag,
+        note: newSelection
+      }
     ]);
-    console.log(post);
   }, [newSelection]);
 
   useEffect(() => {
@@ -74,6 +79,17 @@ function App() {
   useEffect(() => {
     localStorage.setItem('tag', JSON.stringify(tag));
   }, [tag]);
+
+  const findName = useCallback(
+    t => {
+      const index = post.findIndex(p => p.tag === t);
+      if (index > 0) {
+        return <h3>{post[index].note}</h3>;
+      }
+      return [];
+    },
+    [post]
+  );
 
   return (
     <>
@@ -101,9 +117,12 @@ function App() {
       <ul>
         Tags
         {tag.map(t => (
-          <button type="button" onClick={() => setNextTag(t)} key={t}>
-            {t}
-          </button>
+          <li key={t}>
+            <button type="button" onClick={() => setNextTag(t)}>
+              {t}
+            </button>
+            {findName(t)}
+          </li>
         ))}
       </ul>
       <form onSubmit={handleSubmit}>
