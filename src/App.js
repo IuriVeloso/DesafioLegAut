@@ -1,5 +1,6 @@
 /* eslint-disable object-curly-newline */
 import React, { useState, useCallback, useEffect } from 'react';
+import randomcolor from 'randomcolor';
 
 function App() {
   const [tag, setTag] = useState([]);
@@ -28,8 +29,8 @@ function App() {
       selected = document.selection.createRange().text;
     }
     if (
-      selected.anchorNode.nodeValue[selected.focusOffset - 1] !== ' '
-      || selected.anchorNode.nodeValue[selected.focusOffset] !== '.'
+      !/\s/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1]) &&
+      !/[.]/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1])
     ) {
       for (
         let i = selected.focusOffset;
@@ -40,8 +41,8 @@ function App() {
       }
     }
     if (
-      selected.anchorNode.nodeValue[selected.anchorOffset] !== ' '
-      || selected.anchorNode.nodeValue[selected.anchorOffset - 1] !== '.'
+      !/\s/g.test(selected.anchorNode.nodeValue[selected.anchorOffset]) &&
+      !/[.]/g.test(selected.anchorNode.nodeValue[selected.anchorOffset])
     ) {
       for (
         let i = selected.anchorOffset - 1;
@@ -53,21 +54,28 @@ function App() {
     }
 
     const selection = selectionBefore + selected.toString() + selectionAfter;
-    console.log(selected.anchorNode.nodeValue[selected.anchorOffset]);
-    console.log(selection);
-    setNewSelection(selection);
+
+    if (nextTag) {
+      setPost([
+        {
+          tag: nextTag,
+          note: selection
+        },
+        ...post
+      ]);
+      setNewSelection(selection);
+      setNextTag('');
+    }
   };
 
   useEffect(() => {
-    setPost([
-      ...post,
-      {
-        tag: nextTag,
-        note: newSelection
-      }
-    ]);
+    const span = document.createElement('span');
+    const newSpan = `${newSelection}`;
+    const newSpanText = document.createTextNode(newSpan);
+    span.appendChild(newSpanText);
+    span.style.cssText = `background: ${randomcolor()}`;
+    document.getElementById('loremIpsum').appendChild(span);
   }, [newSelection]);
-
   useEffect(() => {
     const tagStorage = localStorage.getItem('tag');
 
@@ -83,7 +91,7 @@ function App() {
   const findName = useCallback(
     t => {
       const index = post.findIndex(p => p.tag === t);
-      if (index > 0) {
+      if (index >= 0) {
         return <h3>{post[index].note}</h3>;
       }
       return [];
@@ -100,6 +108,7 @@ function App() {
         margin-bottom="50px"
         role="textbox"
         tabIndex="0"
+        id="loremIpsum"
         readOnly
       >
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
