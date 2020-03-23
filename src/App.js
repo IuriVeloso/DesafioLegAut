@@ -8,6 +8,8 @@ function App() {
   const [newSelection, setNewSelection] = useState('');
   const [post, setPost] = useState([]);
   const [nextTag, setNextTag] = useState('');
+  const [text, setText] = useState('');
+  const [tokenization, setTokenization] = useState([]);
 
   const handleSubmit = useCallback(
     e => {
@@ -29,27 +31,27 @@ function App() {
       selected = document.selection.createRange().text;
     }
     if (
-      !/\s/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1]) &&
-      !/[.]/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1])
+      !/\s/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1])
+      && !/[.]/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1])
     ) {
       for (
-        let i = selected.focusOffset;
-        selected.anchorNode.nodeValue[i] !== ' ';
-        i += 1
+        let c = selected.focusOffset;
+        selected.anchorNode.nodeValue[c] !== ' ';
+        c += 1
       ) {
-        selectionAfter += selected.anchorNode.nodeValue[i];
+        selectionAfter += selected.anchorNode.nodeValue[c];
       }
     }
     if (
-      !/\s/g.test(selected.anchorNode.nodeValue[selected.anchorOffset]) &&
-      !/[.]/g.test(selected.anchorNode.nodeValue[selected.anchorOffset])
+      !/\s/g.test(selected.anchorNode.nodeValue[selected.anchorOffset])
+      && !/[.]/g.test(selected.anchorNode.nodeValue[selected.anchorOffset])
     ) {
       for (
-        let i = selected.anchorOffset - 1;
-        selected.anchorNode.nodeValue[i] !== ' ';
-        i -= 1
+        let c = selected.anchorOffset - 1;
+        selected.anchorNode.nodeValue[c] !== ' ';
+        c -= 1
       ) {
-        selectionBefore = selected.anchorNode.nodeValue[i] + selectionBefore;
+        selectionBefore = selected.anchorNode.nodeValue[c] + selectionBefore;
       }
     }
 
@@ -58,27 +60,60 @@ function App() {
     if (nextTag) {
       setPost([
         {
-          tag: nextTag,
+          token: nextTag,
           note: selection
         },
         ...post
       ]);
       setNewSelection(selection);
       setNextTag('');
+      const tokenSelection = selection.split(' ');
+      let beforeSpan = '';
+      let span = '';
+      let afterSpan = '';
+      let i = 0;
+
+      for (; i < tokenization.indexOf(tokenSelection[0]); i += 1) {
+        beforeSpan = `${beforeSpan + tokenization[i]} `;
+      }
+
+      for (
+        ;
+        i <= tokenization.indexOf(tokenSelection[tokenSelection.length - 1]);
+        i += 1
+      ) {
+        span = `${span + tokenization[i]} `;
+      }
+
+      for (
+        ;
+        i <= tokenization.indexOf(tokenization[tokenization.length - 1]);
+        i += 1
+      ) {
+        afterSpan = `${afterSpan + tokenization[i]} `;
+      }
+      const newHTML = document.createElement('span');
+      const newSpan = span;
+      const newSpanText = document.createTextNode(newSpan);
+      newHTML.appendChild(newSpanText);
+      newHTML.style.cssText = `background: ${randomcolor()}`;
+      document.getElementById(
+        'loremIpsum'
+      ).innerHTML = `${beforeSpan}${newHTML.outerHTML}${afterSpan}`;
     }
   };
 
   useEffect(() => {
-    const span = document.createElement('span');
-    const newSpan = `${newSelection}`;
-    const newSpanText = document.createTextNode(newSpan);
-    span.appendChild(newSpanText);
+    /*    span.appendChild(newSpanText);
     span.style.cssText = `background: ${randomcolor()}`;
-    document.getElementById('loremIpsum').appendChild(span);
+    document.getElementById('loremIpsum').appendChild(span); */
   }, [newSelection]);
+
   useEffect(() => {
     const tagStorage = localStorage.getItem('tag');
-
+    setText(
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Donec ac odio tempor orci dapibus ultrices in iaculis. Sit amet nulla facilisi morbi tempus iaculis urna id volutpat. Quam viverra orci sagittis eu volutpat. Nisl suscipit adipiscing bibendum est ultricies integer quis auctor. Ac placerat vestibulum lectus mauris ultrices eros in. Justo eget magna fermentum iaculis eu non diam phasellus vestibulum. Odio morbi quis commodo odio aenean. At tempor commodo ullamcorper a lacus vestibulum sed. Ac turpis egestas maecenas pharetra. Nisi vitae suscipit tellus mauris a diam.'
+    );
     if (tagStorage) {
       setTag(JSON.parse(tagStorage));
     }
@@ -86,11 +121,12 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('tag', JSON.stringify(tag));
-  }, [tag]);
+    setTokenization(() => text.split(' '));
+  }, [tag, text]);
 
   const findName = useCallback(
     t => {
-      const index = post.findIndex(p => p.tag === t);
+      const index = post.findIndex(p => p.token === t);
       if (index >= 0) {
         return <h3>{post[index].note}</h3>;
       }
@@ -111,16 +147,7 @@ function App() {
         id="loremIpsum"
         readOnly
       >
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Donec ac odio tempor
-        orci dapibus ultrices in iaculis. Sit amet nulla facilisi morbi tempus
-        iaculis urna id volutpat. Quam viverra orci sagittis eu volutpat. Nisl
-        suscipit adipiscing bibendum est ultricies integer quis auctor. Ac
-        placerat vestibulum lectus mauris ultrices eros in. Justo eget magna
-        fermentum iaculis eu non diam phasellus vestibulum. Odio morbi quis
-        commodo odio aenean. At tempor commodo ullamcorper a lacus vestibulum
-        sed. Ac turpis egestas maecenas pharetra. Nisi vitae suscipit tellus
-        mauris a diam.
+        {text}
       </div>
 
       <ul>
