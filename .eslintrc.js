@@ -31,6 +31,7 @@ module.exports = {
       "arrow-parens": 0,
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
-      'comma-dangle':0
+      'comma-dangle':0,
+      'operator-linebreak': 0
     },
 };

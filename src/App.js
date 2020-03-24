@@ -9,6 +9,45 @@ function App() {
   const [nextTag, setNextTag] = useState('');
   const [tokenization, setTokenization] = useState([]);
 
+  useEffect(() => {
+    console.log('setNewToken');
+    const text = document.getElementById('loremIpsum');
+    const algo = post.filter(p => p.tagNote === nextTag);
+    if (algo.length > 1) {
+      const index = post.findIndex(p => p.tagNote === nextTag);
+      const span = document.getElementById(post[index].tagNote);
+      span.insertAdjacentText('beforebegin', span.firstChild.nodeValue);
+      span.parentNode.removeChild(span);
+      post.splice(index, 1);
+      console.log('deleteOldSpans');
+    }
+    setTokenization(() => text.innerHTML.split(' '));
+    setNextTag('');
+  }, [post]);
+
+  useEffect(() => {
+    const tagStorage = localStorage.getItem('tag');
+    if (tagStorage) {
+      setTag(JSON.parse(tagStorage));
+    }
+    console.log('componentDidMoount');
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tag', JSON.stringify(tag));
+  }, [tag]);
+
+  const findName = useCallback(
+    t => {
+      const index = post.findIndex(p => p.tagNote === t);
+      if (index >= 0) {
+        return <h2>{post[index].token}</h2>;
+      }
+      return [];
+    },
+    [post, tokenization]
+  );
+
   const handleSubmit = useCallback(
     e => {
       e.preventDefault();
@@ -18,50 +57,7 @@ function App() {
     [newTag, tag]
   );
 
-  const handleSelect = () => {
-    let selected = null;
-    let selectionAfter = '';
-    let selectionBefore = '';
-    if (window.getSelection()) {
-      selected = window.getSelection();
-    }
-    if (document.selection) {
-      selected = document.selection.createRange().text;
-    }
-    if (
-      !/\s/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1])
-      && !/[.]/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1])
-    ) {
-      for (
-        let c = selected.focusOffset;
-        selected.anchorNode.nodeValue[c] !== ' ';
-        c += 1
-      ) {
-        selectionAfter += selected.anchorNode.nodeValue[c];
-      }
-    }
-    if (
-      !/\s/g.test(selected.anchorNode.nodeValue[selected.anchorOffset])
-      && !/[.]/g.test(selected.anchorNode.nodeValue[selected.anchorOffset])
-    ) {
-      for (
-        let c = selected.anchorOffset - 1;
-        selected.anchorNode.nodeValue[c] !== ' ';
-        c -= 1
-      ) {
-        selectionBefore = selected.anchorNode.nodeValue[c] + selectionBefore;
-      }
-    }
-
-    const selection = selectionBefore + selected.toString() + selectionAfter;
-    setPost([
-      {
-        tagNote: nextTag,
-        token: selection
-      },
-      ...post
-    ]);
-    setNextTag('');
+  const handleSpan = selection => {
     const tokenSelection = selection.split(' ');
     let beforeSpan = '';
     let span = '';
@@ -89,39 +85,63 @@ function App() {
     }
     const newHTML = document.createElement('SPAN');
     const newSpan = document.createTextNode(span);
+
+    newHTML.setAttribute('id', nextTag);
     newHTML.appendChild(newSpan);
+    newHTML.insertAdjacentHTML(
+      'beforeend',
+      `<small style="background: rgb(0,0,0,0.2)"> ${nextTag} </small>`
+    );
     newHTML.style.cssText = `background: ${randomcolor()}`;
-    document.getElementById(
-      'loremIpsum'
-    ).innerHTML = `${beforeSpan}${newHTML.outerHTML}${afterSpan}`;
+    const finalText = `${beforeSpan}${newHTML.outerHTML}${afterSpan}`;
+    document.getElementById('loremIpsum').innerHTML = finalText;
   };
 
-  useEffect(() => {
-    setTokenization(() => document.getElementById('loremIpsum').innerHTML.split(' '));
-  }, [post]);
-
-  useEffect(() => {
-    const tagStorage = localStorage.getItem('tag');
-    if (tagStorage) {
-      setTag(JSON.parse(tagStorage));
+  const handleSelect = () => {
+    let selected = null;
+    let selectionAfter = '';
+    let selectionBefore = '';
+    if (window.getSelection()) {
+      selected = window.getSelection();
     }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('tag', JSON.stringify(tag));
-    console.log(tokenization);
-  }, [tag]);
-
-  const findName = useCallback(
-    t => {
-      const index = post.findIndex(p => p.tagNote === t);
-      if (index >= 0) {
-        return <h2>{post[index].token}</h2>;
+    if (document.selection) {
+      selected = document.selection.createRange().text;
+    }
+    if (
+      !/\s/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1]) &&
+      !/[.]/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1])
+    ) {
+      for (
+        let c = selected.focusOffset;
+        selected.anchorNode.nodeValue[c] !== ' ';
+        c += 1
+      ) {
+        selectionAfter += selected.anchorNode.nodeValue[c];
       }
-      return [];
-    },
-    [post]
-  );
+    }
+    if (
+      !/\s/g.test(selected.anchorNode.nodeValue[selected.anchorOffset]) &&
+      !/[.]/g.test(selected.anchorNode.nodeValue[selected.anchorOffset])
+    ) {
+      for (
+        let c = selected.anchorOffset - 1;
+        selected.anchorNode.nodeValue[c] !== ' ';
+        c -= 1
+      ) {
+        selectionBefore = selected.anchorNode.nodeValue[c] + selectionBefore;
+      }
+    }
+
+    const selection = selectionBefore + selected.toString() + selectionAfter;
+    setPost([
+      ...post,
+      {
+        tagNote: nextTag,
+        token: selection
+      }
+    ]);
+    handleSpan(selection);
+  };
 
   return (
     <>
