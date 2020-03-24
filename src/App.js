@@ -1,13 +1,18 @@
+/* eslint-disable object-curly-newline */
 import React, { useState, useCallback, useEffect } from 'react';
+import randomcolor from 'randomcolor';
 
 function App() {
   const [tag, setTag] = useState([]);
-  const [newTag, setNewTag] = useState('');
+  const [newTag, setNewTag] = useState([]);
+  const [post, setPost] = useState([]);
+  const [nextTag, setNextTag] = useState('');
+  const [tokenization, setTokenization] = useState([]);
 
   const handleSubmit = useCallback(
     e => {
       e.preventDefault();
-      setTag([...tag, { tagName: newTag, tagId: '' }]);
+      setTag([...tag, newTag]);
       setNewTag('');
     },
     [newTag, tag]
@@ -23,31 +28,80 @@ function App() {
     if (document.selection) {
       selected = document.selection.createRange().text;
     }
-    if (selected.anchorNode.nodeValue[selected.focusOffset - 1] !== ' ') {
+    if (
+      !/\s/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1])
+      && !/[.]/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1])
+    ) {
       for (
-        let i = selected.focusOffset;
-        selected.anchorNode.nodeValue[i] !== ' ';
-        i += 1
+        let c = selected.focusOffset;
+        selected.anchorNode.nodeValue[c] !== ' ';
+        c += 1
       ) {
-        selectionAfter += selected.anchorNode.nodeValue[i];
+        selectionAfter += selected.anchorNode.nodeValue[c];
       }
     }
-    if (selected.anchorNode.nodeValue[selected.anchorOffset] !== ' ') {
+    if (
+      !/\s/g.test(selected.anchorNode.nodeValue[selected.anchorOffset])
+      && !/[.]/g.test(selected.anchorNode.nodeValue[selected.anchorOffset])
+    ) {
       for (
-        let i = selected.anchorOffset - 1;
-        selected.anchorNode.nodeValue[i] !== ' ';
-        i -= 1
+        let c = selected.anchorOffset - 1;
+        selected.anchorNode.nodeValue[c] !== ' ';
+        c -= 1
       ) {
-        selectionBefore = selected.anchorNode.nodeValue[i] + selectionBefore;
+        selectionBefore = selected.anchorNode.nodeValue[c] + selectionBefore;
       }
     }
 
-    console.log(selectionBefore + selected.toString() + selectionAfter);
+    const selection = selectionBefore + selected.toString() + selectionAfter;
+    setPost([
+      {
+        tagNote: nextTag,
+        token: selection
+      },
+      ...post
+    ]);
+    setNextTag('');
+    const tokenSelection = selection.split(' ');
+    let beforeSpan = '';
+    let span = '';
+    let afterSpan = '';
+    let i = 0;
+
+    for (; i < tokenization.indexOf(tokenSelection[0]); i += 1) {
+      beforeSpan = `${beforeSpan + tokenization[i]} `;
+    }
+
+    for (
+      ;
+      i <= tokenization.indexOf(tokenSelection[tokenSelection.length - 1]);
+      i += 1
+    ) {
+      span = `${span + tokenization[i]} `;
+    }
+
+    for (
+      ;
+      i <= tokenization.indexOf(tokenization[tokenization.length - 1]);
+      i += 1
+    ) {
+      afterSpan = `${afterSpan + tokenization[i]} `;
+    }
+    const newHTML = document.createElement('SPAN');
+    const newSpan = document.createTextNode(span);
+    newHTML.appendChild(newSpan);
+    newHTML.style.cssText = `background: ${randomcolor()}`;
+    document.getElementById(
+      'loremIpsum'
+    ).innerHTML = `${beforeSpan}${newHTML.outerHTML}${afterSpan}`;
   };
 
   useEffect(() => {
-    const tagStorage = localStorage.getItem('tag');
+    setTokenization(() => document.getElementById('loremIpsum').innerHTML.split(' '));
+  }, [post]);
 
+  useEffect(() => {
+    const tagStorage = localStorage.getItem('tag');
     if (tagStorage) {
       setTag(JSON.parse(tagStorage));
     }
@@ -55,17 +109,30 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('tag', JSON.stringify(tag));
+    console.log(tokenization);
   }, [tag]);
+
+  const findName = useCallback(
+    t => {
+      const index = post.findIndex(p => p.tagNote === t);
+      if (index >= 0) {
+        return <h2>{post[index].token}</h2>;
+      }
+      return [];
+    },
+    [post]
+  );
 
   return (
     <>
       <div
-        onMouseUp={handleSelect}
+        onMouseUp={nextTag && handleSelect}
         type="text"
         style={{ height: '100px', width: '800px', marginBottom: '50px' }}
         margin-bottom="50px"
         role="textbox"
         tabIndex="0"
+        id="loremIpsum"
         readOnly
       >
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
@@ -83,9 +150,12 @@ function App() {
       <ul>
         Tags
         {tag.map(t => (
-          <button type="button" onClick={handleSelect} key={t.tagName}>
-            {t.tagName}
-          </button>
+          <li key={t}>
+            <button type="button" onClick={() => setNextTag(t)}>
+              {t}
+            </button>
+            {findName(t)}
+          </li>
         ))}
       </ul>
       <form onSubmit={handleSubmit}>
