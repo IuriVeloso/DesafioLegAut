@@ -5,10 +5,8 @@ import randomcolor from 'randomcolor';
 function App() {
   const [tag, setTag] = useState([]);
   const [newTag, setNewTag] = useState([]);
-  const [newSelection, setNewSelection] = useState('');
   const [post, setPost] = useState([]);
   const [nextTag, setNextTag] = useState('');
-  const [text, setText] = useState('');
   const [tokenization, setTokenization] = useState([]);
 
   const handleSubmit = useCallback(
@@ -56,64 +54,54 @@ function App() {
     }
 
     const selection = selectionBefore + selected.toString() + selectionAfter;
+    setPost([
+      {
+        tagNote: nextTag,
+        token: selection
+      },
+      ...post
+    ]);
+    setNextTag('');
+    const tokenSelection = selection.split(' ');
+    let beforeSpan = '';
+    let span = '';
+    let afterSpan = '';
+    let i = 0;
 
-    if (nextTag) {
-      setPost([
-        {
-          token: nextTag,
-          note: selection
-        },
-        ...post
-      ]);
-      setNewSelection(selection);
-      setNextTag('');
-      const tokenSelection = selection.split(' ');
-      let beforeSpan = '';
-      let span = '';
-      let afterSpan = '';
-      let i = 0;
-
-      for (; i < tokenization.indexOf(tokenSelection[0]); i += 1) {
-        beforeSpan = `${beforeSpan + tokenization[i]} `;
-      }
-
-      for (
-        ;
-        i <= tokenization.indexOf(tokenSelection[tokenSelection.length - 1]);
-        i += 1
-      ) {
-        span = `${span + tokenization[i]} `;
-      }
-
-      for (
-        ;
-        i <= tokenization.indexOf(tokenization[tokenization.length - 1]);
-        i += 1
-      ) {
-        afterSpan = `${afterSpan + tokenization[i]} `;
-      }
-      const newHTML = document.createElement('span');
-      const newSpan = span;
-      const newSpanText = document.createTextNode(newSpan);
-      newHTML.appendChild(newSpanText);
-      newHTML.style.cssText = `background: ${randomcolor()}`;
-      document.getElementById(
-        'loremIpsum'
-      ).innerHTML = `${beforeSpan}${newHTML.outerHTML}${afterSpan}`;
+    for (; i < tokenization.indexOf(tokenSelection[0]); i += 1) {
+      beforeSpan = `${beforeSpan + tokenization[i]} `;
     }
+
+    for (
+      ;
+      i <= tokenization.indexOf(tokenSelection[tokenSelection.length - 1]);
+      i += 1
+    ) {
+      span = `${span + tokenization[i]} `;
+    }
+
+    for (
+      ;
+      i <= tokenization.indexOf(tokenization[tokenization.length - 1]);
+      i += 1
+    ) {
+      afterSpan = `${afterSpan + tokenization[i]} `;
+    }
+    const newHTML = document.createElement('SPAN');
+    const newSpan = document.createTextNode(span);
+    newHTML.appendChild(newSpan);
+    newHTML.style.cssText = `background: ${randomcolor()}`;
+    document.getElementById(
+      'loremIpsum'
+    ).innerHTML = `${beforeSpan}${newHTML.outerHTML}${afterSpan}`;
   };
 
   useEffect(() => {
-    /*    span.appendChild(newSpanText);
-    span.style.cssText = `background: ${randomcolor()}`;
-    document.getElementById('loremIpsum').appendChild(span); */
-  }, [newSelection]);
+    setTokenization(() => document.getElementById('loremIpsum').innerHTML.split(' '));
+  }, [post]);
 
   useEffect(() => {
     const tagStorage = localStorage.getItem('tag');
-    setText(
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Donec ac odio tempor orci dapibus ultrices in iaculis. Sit amet nulla facilisi morbi tempus iaculis urna id volutpat. Quam viverra orci sagittis eu volutpat. Nisl suscipit adipiscing bibendum est ultricies integer quis auctor. Ac placerat vestibulum lectus mauris ultrices eros in. Justo eget magna fermentum iaculis eu non diam phasellus vestibulum. Odio morbi quis commodo odio aenean. At tempor commodo ullamcorper a lacus vestibulum sed. Ac turpis egestas maecenas pharetra. Nisi vitae suscipit tellus mauris a diam.'
-    );
     if (tagStorage) {
       setTag(JSON.parse(tagStorage));
     }
@@ -121,14 +109,14 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('tag', JSON.stringify(tag));
-    setTokenization(() => text.split(' '));
-  }, [tag, text]);
+    console.log(tokenization);
+  }, [tag]);
 
   const findName = useCallback(
     t => {
-      const index = post.findIndex(p => p.token === t);
+      const index = post.findIndex(p => p.tagNote === t);
       if (index >= 0) {
-        return <h3>{post[index].note}</h3>;
+        return <h2>{post[index].token}</h2>;
       }
       return [];
     },
@@ -138,7 +126,7 @@ function App() {
   return (
     <>
       <div
-        onMouseUp={handleSelect}
+        onMouseUp={nextTag && handleSelect}
         type="text"
         style={{ height: '100px', width: '800px', marginBottom: '50px' }}
         margin-bottom="50px"
@@ -147,7 +135,16 @@ function App() {
         id="loremIpsum"
         readOnly
       >
-        {text}
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua. Donec ac odio tempor
+        orci dapibus ultrices in iaculis. Sit amet nulla facilisi morbi tempus
+        iaculis urna id volutpat. Quam viverra orci sagittis eu volutpat. Nisl
+        suscipit adipiscing bibendum est ultricies integer quis auctor. Ac
+        placerat vestibulum lectus mauris ultrices eros in. Justo eget magna
+        fermentum iaculis eu non diam phasellus vestibulum. Odio morbi quis
+        commodo odio aenean. At tempor commodo ullamcorper a lacus vestibulum
+        sed. Ac turpis egestas maecenas pharetra. Nisi vitae suscipit tellus
+        mauris a diam.
       </div>
 
       <ul>
