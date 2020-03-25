@@ -15,12 +15,11 @@ function App() {
     if (contagem.length > 1) {
       const index = post.findIndex(p => p.tagNote === nextTag);
       const span = document.getElementById(post[index].token);
-      span.insertAdjacentHTML('beforebegin', span.firstChild.nodeValue);
+      span.insertAdjacentText('beforebegin', span.firstChild.nodeValue);
       span.parentNode.removeChild(span);
       post.splice(index, 1);
     }
     setTokenization(() => text.innerHTML.split(' '));
-    console.log(text.innerHTML.split(' '));
     setNextTag('');
   }, [post]);
 
@@ -115,7 +114,8 @@ function App() {
     ) {
       for (
         let c = selected.focusOffset;
-        selected.anchorNode.nodeValue[c] !== ' ';
+        selected.anchorNode.nodeValue[c] !== ' ' &&
+        c <= selected.anchorNode.length - 1;
         c += 1
       ) {
         selectionAfter += selected.anchorNode.nodeValue[c];
@@ -127,7 +127,7 @@ function App() {
     ) {
       for (
         let c = selected.anchorOffset - 1;
-        selected.anchorNode.nodeValue[c] !== ' ' || c !== 0;
+        selected.anchorNode.nodeValue[c] !== ' ' && c >= 0;
         c -= 1
       ) {
         selectionBefore = selected.anchorNode.nodeValue[c] + selectionBefore;
