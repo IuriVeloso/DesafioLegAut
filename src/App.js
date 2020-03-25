@@ -10,18 +10,17 @@ function App() {
   const [tokenization, setTokenization] = useState([]);
 
   useEffect(() => {
-    console.log('setNewToken');
     const text = document.getElementById('loremIpsum');
-    const algo = post.filter(p => p.tagNote === nextTag);
-    if (algo.length > 1) {
+    const contagem = post.filter(p => p.tagNote === nextTag);
+    if (contagem.length > 1) {
       const index = post.findIndex(p => p.tagNote === nextTag);
-      const span = document.getElementById(post[index].tagNote);
-      span.insertAdjacentText('beforebegin', span.firstChild.nodeValue);
+      const span = document.getElementById(post[index].token);
+      span.insertAdjacentHTML('beforebegin', span.firstChild.nodeValue);
       span.parentNode.removeChild(span);
       post.splice(index, 1);
-      console.log('deleteOldSpans');
     }
     setTokenization(() => text.innerHTML.split(' '));
+    console.log(text.innerHTML.split(' '));
     setNextTag('');
   }, [post]);
 
@@ -30,7 +29,6 @@ function App() {
     if (tagStorage) {
       setTag(JSON.parse(tagStorage));
     }
-    console.log('componentDidMoount');
   }, []);
 
   useEffect(() => {
@@ -45,7 +43,7 @@ function App() {
       }
       return [];
     },
-    [post, tokenization]
+    [tokenization]
   );
 
   const handleSubmit = useCallback(
@@ -57,7 +55,7 @@ function App() {
     [newTag, tag]
   );
 
-  const handleSpan = selection => {
+  const handleSpanAdd = selection => {
     const tokenSelection = selection.split(' ');
     let beforeSpan = '';
     let span = '';
@@ -85,15 +83,16 @@ function App() {
     }
     const newHTML = document.createElement('SPAN');
     const newSpan = document.createTextNode(span);
-
-    newHTML.setAttribute('id', nextTag);
+    newHTML.setAttribute('id', selection);
     newHTML.appendChild(newSpan);
     newHTML.insertAdjacentHTML(
       'beforeend',
-      `<small style="background: rgb(0,0,0,0.2)"> ${nextTag} </small>`
+      `<small style="background: rgb(0,0,0,0.2)">${nextTag}</small>`
     );
     newHTML.style.cssText = `background: ${randomcolor()}`;
-    const finalText = `${beforeSpan}${newHTML.outerHTML}${afterSpan}`;
+    const finalText = `${beforeSpan}${
+      newHTML.outerHTML
+    }${afterSpan.trimRight()}`;
     document.getElementById('loremIpsum').innerHTML = finalText;
   };
 
@@ -101,15 +100,18 @@ function App() {
     let selected = null;
     let selectionAfter = '';
     let selectionBefore = '';
+    let indexSelection = 0;
+
     if (window.getSelection()) {
       selected = window.getSelection();
     }
     if (document.selection) {
       selected = document.selection.createRange().text;
     }
+
     if (
       !/\s/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1]) &&
-      !/[.]/g.test(selected.anchorNode.nodeValue[selected.focusOffset - 1])
+      !/\s/g.test(selected.anchorNode.nodeValue[selected.focusOffset])
     ) {
       for (
         let c = selected.focusOffset;
@@ -121,18 +123,25 @@ function App() {
     }
     if (
       !/\s/g.test(selected.anchorNode.nodeValue[selected.anchorOffset]) &&
-      !/[.]/g.test(selected.anchorNode.nodeValue[selected.anchorOffset])
+      !/\s/g.test(selected.anchorNode.nodeValue[selected.anchorOffset - 1])
     ) {
       for (
         let c = selected.anchorOffset - 1;
-        selected.anchorNode.nodeValue[c] !== ' ';
+        selected.anchorNode.nodeValue[c] !== ' ' || c !== 0;
         c -= 1
       ) {
         selectionBefore = selected.anchorNode.nodeValue[c] + selectionBefore;
       }
     }
 
-    const selection = selectionBefore + selected.toString() + selectionAfter;
+    for (let d = 0; d <= selected.anchorOffset; d += 1) {
+      if (document.getElementById('loremIpsum').innerHTML[d] === ' ') {
+        indexSelection += 1;
+      }
+    }
+
+    const selection =
+      selectionBefore + selected.toString().trim() + selectionAfter;
     setPost([
       ...post,
       {
@@ -140,7 +149,7 @@ function App() {
         token: selection
       }
     ]);
-    handleSpan(selection);
+    handleSpanAdd(selection);
   };
 
   return (
