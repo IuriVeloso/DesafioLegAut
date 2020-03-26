@@ -1,6 +1,6 @@
-/* eslint-disable object-curly-newline */
 import React, { useState, useCallback, useEffect } from 'react';
 import randomcolor from 'randomcolor';
+import { Text, List, TagForms } from './styles.js';
 
 function App() {
   const [tag, setTag] = useState([]);
@@ -9,17 +9,40 @@ function App() {
   const [nextTag, setNextTag] = useState('');
   const [tokenization, setTokenization] = useState([]);
 
+  const deleteSpan = (passado, index) => {
+    const newText = document.createTextNode(passado.firstChild.nodeValue);
+    passado.parentNode.insertBefore(newText, passado);
+    passado.parentNode.removeChild(passado);
+    post.splice(index, 1);
+  };
+
+  const addRemover = useCallback(
+    tagToAdd => {
+      const index = post.findIndex(p => p.tagNote === tagToAdd);
+      if (index >= 0) {
+        const span = document.getElementById(post[index].token);
+        span.addEventListener('click', () => deleteSpan(span, index), false);
+        console.log('dentro');
+      }
+      console.log(post);
+    },
+    [post]
+  );
+
   useEffect(() => {
     const text = document.getElementById('loremIpsum');
-    const contagem = post.filter(p => p.tagNote === nextTag);
+    const lastTag = nextTag;
+    const contagem = post.filter(p => p.tagNote === lastTag);
+    addRemover(lastTag);
     if (contagem.length > 1) {
       const index = post.findIndex(p => p.tagNote === nextTag);
       const span = document.getElementById(post[index].token);
-      span.insertAdjacentText('beforebegin', span.firstChild.nodeValue);
+      const newText = document.createTextNode(span.firstChild.nodeValue);
+      text.insertBefore(newText, span);
       span.parentNode.removeChild(span);
       post.splice(index, 1);
     }
-    setTokenization(() => text.innerHTML.split(' '));
+    setTokenization(() => text.innerText.split(' '));
     setNextTag('');
   }, [post]);
 
@@ -45,7 +68,7 @@ function App() {
     [tokenization]
   );
 
-  const handleSubmit = useCallback(
+  const handleSubmitNewTag = useCallback(
     e => {
       e.preventDefault();
       setTag([...tag, newTag]);
@@ -56,32 +79,31 @@ function App() {
 
   const handleSpanAdd = selection => {
     const tokenSelection = selection.split(' ');
+    const text = document.getElementById('loremIpsum');
+    const tokens = text.innerHTML.split(' ');
     let beforeSpan = '';
     let span = '';
     let afterSpan = '';
     let i = 0;
 
-    for (; i < tokenization.indexOf(tokenSelection[0]); i += 1) {
-      beforeSpan = `${beforeSpan + tokenization[i]} `;
+    for (; i < tokens.indexOf(tokenSelection[0]); i += 1) {
+      beforeSpan = `${beforeSpan + tokens[i]} `;
     }
 
     for (
       ;
-      i <= tokenization.indexOf(tokenSelection[tokenSelection.length - 1]);
+      i <= tokens.indexOf(tokenSelection[tokenSelection.length - 1]);
       i += 1
     ) {
-      span = `${span + tokenization[i]} `;
+      span = `${span + tokens[i]} `;
     }
 
-    for (
-      ;
-      i <= tokenization.indexOf(tokenization[tokenization.length - 1]);
-      i += 1
-    ) {
-      afterSpan = `${afterSpan + tokenization[i]} `;
+    for (; i <= tokens.indexOf(tokens[tokens.length - 1]); i += 1) {
+      afterSpan = `${afterSpan + tokens[i]} `;
     }
     const newHTML = document.createElement('SPAN');
     const newSpan = document.createTextNode(span);
+
     newHTML.setAttribute('id', selection);
     newHTML.appendChild(newSpan);
     newHTML.insertAdjacentHTML(
@@ -92,14 +114,13 @@ function App() {
     const finalText = `${beforeSpan}${
       newHTML.outerHTML
     }${afterSpan.trimRight()}`;
-    document.getElementById('loremIpsum').innerHTML = finalText;
+    text.innerHTML = finalText;
   };
 
   const handleSelect = () => {
     let selected = null;
     let selectionAfter = '';
     let selectionBefore = '';
-    let indexSelection = 0;
 
     if (window.getSelection()) {
       selected = window.getSelection();
@@ -134,19 +155,15 @@ function App() {
       }
     }
 
-    for (let d = 0; d <= selected.anchorOffset; d += 1) {
-      if (document.getElementById('loremIpsum').innerHTML[d] === ' ') {
-        indexSelection += 1;
-      }
-    }
-
     const selection =
       selectionBefore + selected.toString().trim() + selectionAfter;
     setPost([
       ...post,
       {
         tagNote: nextTag,
-        token: selection
+        token: selection,
+        postBegin: selected.anchorOffset,
+        postEnd: selected.focusOffset
       }
     ]);
     handleSpanAdd(selection);
@@ -154,11 +171,9 @@ function App() {
 
   return (
     <>
-      <div
+      <Text
         onMouseUp={nextTag && handleSelect}
         type="text"
-        style={{ height: '100px', width: '800px', marginBottom: '50px' }}
-        margin-bottom="50px"
         role="textbox"
         tabIndex="0"
         id="loremIpsum"
@@ -174,9 +189,9 @@ function App() {
         commodo odio aenean. At tempor commodo ullamcorper a lacus vestibulum
         sed. Ac turpis egestas maecenas pharetra. Nisi vitae suscipit tellus
         mauris a diam.
-      </div>
+      </Text>
 
-      <ul>
+      <List>
         Tags
         {tag.map(t => (
           <li key={t}>
@@ -186,8 +201,8 @@ function App() {
             {findName(t)}
           </li>
         ))}
-      </ul>
-      <form onSubmit={handleSubmit}>
+      </List>
+      <TagForms onSubmit={handleSubmitNewTag}>
         <input
           placeholder="Insira sua tag"
           name="tag"
@@ -195,7 +210,7 @@ function App() {
           onChange={e => setNewTag(e.target.value)}
         />
         <button type="submit">Subir</button>
-      </form>
+      </TagForms>
     </>
   );
 }
