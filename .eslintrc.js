@@ -32,6 +32,8 @@ module.exports = {
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       'comma-dangle':0,
-      'operator-linebreak': 0
+      'operator-linebreak': 0,
+      'object-curly-newline': 0,
+      'import/extensions': 0
     },
 };

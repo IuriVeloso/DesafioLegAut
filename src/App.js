@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import randomcolor from 'randomcolor';
-import { Text, List, TagForms } from './styles.js';
+import { Text, List, TagForms, Organization } from './styles/styles.js';
+import Logo from './assets/logo.png';
+import GlobalStyle from './styles/globalStyle.js';
 
 function App() {
   const [tag, setTag] = useState([]);
@@ -14,6 +16,7 @@ function App() {
     passado.parentNode.insertBefore(newText, passado);
     passado.parentNode.removeChild(passado);
     post.splice(index, 1);
+    setPost([...post]);
   };
 
   const addRemover = useCallback(
@@ -22,9 +25,7 @@ function App() {
       if (index >= 0) {
         const span = document.getElementById(post[index].token);
         span.addEventListener('click', () => deleteSpan(span, index), false);
-        console.log('dentro');
       }
-      console.log(post);
     },
     [post]
   );
@@ -171,46 +172,56 @@ function App() {
 
   return (
     <>
-      <Text
-        onMouseUp={nextTag && handleSelect}
-        type="text"
-        role="textbox"
-        tabIndex="0"
-        id="loremIpsum"
-        readOnly
-      >
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Donec ac odio tempor
-        orci dapibus ultrices in iaculis. Sit amet nulla facilisi morbi tempus
-        iaculis urna id volutpat. Quam viverra orci sagittis eu volutpat. Nisl
-        suscipit adipiscing bibendum est ultricies integer quis auctor. Ac
-        placerat vestibulum lectus mauris ultrices eros in. Justo eget magna
-        fermentum iaculis eu non diam phasellus vestibulum. Odio morbi quis
-        commodo odio aenean. At tempor commodo ullamcorper a lacus vestibulum
-        sed. Ac turpis egestas maecenas pharetra. Nisi vitae suscipit tellus
-        mauris a diam.
-      </Text>
+      <GlobalStyle />
+      <Organization>
+        <img src={Logo} alt="logo" />
+        <Text
+          onMouseUp={nextTag && handleSelect}
+          type="text"
+          role="textbox"
+          tabIndex="0"
+          id="loremIpsum"
+          readOnly
+        >
+          -1-48.605-TITULO: Compra e Venda.DATA DO TITULO: Contrato Particular
+          datado de 17 de Novembro de 1.994, ficando uma das vias arquivado
+          neste cart. sob nO 60.873. ADQUIRENTES: MARCOS VARGAS SILVA
+          brasileiro, casado sob o regime de comunhão universal de bens,
+          industriário, portador da CI nO 10576970-SP, CIC 022.159.738-70, e sua
+          mulher MÁRCIA LIENE SILVA, brasileira, do lar, portadora da CI no 147
+          3850-9-PR, CIC no 237.725.329-91, residentes e domiciliados à Avenida
+          Iguaçú, nQ 2920 e JACQUELINE PESSOA GARCIA, brasileira, solteira,
+          auxiliar de escritório, portadora da CI no 6640845-0-PR, CIC
+          977.965.739-87, residente e domiciliada à Avenida Iguacú 2920.
+          TRANSMITENTE: CONSTRUÇÃO-CASA INDUSTRIALIZADA LTDA, já qualificada.
+          VALOR:R$.58.337,71 -(abrange a matr. 48.606). CONDIÇOES:Não tem. CND
+          DO INSS NO 367.824. --SISA NO 194.666/94, paga s/avaliação de
+          R$.58.337,71 (abrange a matr. 48.606). Apresentada ao Agente
+          Financeiro a certidão de quitação de Tributos Federais. O referido é
+          verdade e dou fé. Rio de Janeiro, 24 de Julho de 1.998.
+        </Text>
 
-      <List>
-        Tags
-        {tag.map(t => (
-          <li key={t}>
-            <button type="button" onClick={() => setNextTag(t)}>
-              {t}
-            </button>
-            {findName(t)}
-          </li>
-        ))}
-      </List>
-      <TagForms onSubmit={handleSubmitNewTag}>
-        <input
-          placeholder="Insira sua tag"
-          name="tag"
-          value={newTag}
-          onChange={e => setNewTag(e.target.value)}
-        />
-        <button type="submit">Subir</button>
-      </TagForms>
+        <List>
+          Tags/ Tokens
+          {tag.map(t => (
+            <li key={t}>
+              <button type="button" onClick={() => setNextTag(t)}>
+                {t}
+              </button>
+              {findName(t)}
+            </li>
+          ))}
+        </List>
+        <TagForms onSubmit={handleSubmitNewTag}>
+          <input
+            placeholder="Insira sua tag"
+            name="tag"
+            value={newTag}
+            onChange={e => setNewTag(e.target.value)}
+          />
+          <button type="submit">Adicionar Tag</button>
+        </TagForms>
+      </Organization>
     </>
   );
 }
