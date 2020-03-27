@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import randomcolor from 'randomcolor';
+
 import { Text, List, TagForms, Organization } from './styles/styles.js';
 import Logo from './assets/logo.png';
 import GlobalStyle from './styles/globalStyle.js';
@@ -9,15 +10,17 @@ function App() {
   const [newTag, setNewTag] = useState([]);
   const [post, setPost] = useState([]);
   const [nextTag, setNextTag] = useState('');
-  const [tokenization, setTokenization] = useState([]);
 
-  const deleteSpan = (passado, index) => {
-    const newText = document.createTextNode(passado.firstChild.nodeValue);
-    passado.parentNode.insertBefore(newText, passado);
-    passado.parentNode.removeChild(passado);
-    post.splice(index, 1);
-    setPost([...post]);
-  };
+  const deleteSpan = useCallback(
+    (passado, index) => {
+      const newText = document.createTextNode(`${passado.id} `);
+      passado.parentNode.insertBefore(newText, passado);
+      passado.parentNode.removeChild(passado);
+      post.splice(index, 1);
+      setPost([...post]);
+    },
+    [post]
+  );
 
   const addRemover = useCallback(
     tagToAdd => {
@@ -43,7 +46,6 @@ function App() {
       span.parentNode.removeChild(span);
       post.splice(index, 1);
     }
-    setTokenization(() => text.innerText.split(' '));
     setNextTag('');
   }, [post]);
 
@@ -66,13 +68,15 @@ function App() {
       }
       return [];
     },
-    [tokenization]
+    [post]
   );
 
   const handleSubmitNewTag = useCallback(
     e => {
       e.preventDefault();
-      setTag([...tag, newTag]);
+      if (newTag.length > 0) {
+        setTag([...tag, newTag]);
+      }
       setNewTag('');
     },
     [newTag, tag]
@@ -106,16 +110,22 @@ function App() {
     const newSpan = document.createTextNode(span);
 
     newHTML.setAttribute('id', selection);
-    newHTML.appendChild(newSpan);
     newHTML.insertAdjacentHTML(
       'beforeend',
       `<small style="background: rgb(0,0,0,0.2)">${nextTag}</small>`
     );
     newHTML.style.cssText = `background: ${randomcolor()}`;
+    newHTML.appendChild(newSpan);
     const finalText = `${beforeSpan}${
       newHTML.outerHTML
     }${afterSpan.trimRight()}`;
     text.innerHTML = finalText;
+    if (post) {
+      post.map(p => {
+        addRemover(p.tagNote);
+        return [];
+      });
+    }
   };
 
   const handleSelect = () => {
@@ -183,7 +193,7 @@ function App() {
           id="loremIpsum"
           readOnly
         >
-          -1-48.605-TITULO: Compra e Venda.DATA DO TITULO: Contrato Particular
+          -1-48.605-TITULO: Compra e Venda. DATA DO TITULO: Contrato Particular
           datado de 17 de Novembro de 1.994, ficando uma das vias arquivado
           neste cart. sob nO 60.873. ADQUIRENTES: MARCOS VARGAS SILVA
           brasileiro, casado sob o regime de comunhão universal de bens,
@@ -194,7 +204,7 @@ function App() {
           auxiliar de escritório, portadora da CI no 6640845-0-PR, CIC
           977.965.739-87, residente e domiciliada à Avenida Iguacú 2920.
           TRANSMITENTE: CONSTRUÇÃO-CASA INDUSTRIALIZADA LTDA, já qualificada.
-          VALOR:R$.58.337,71 -(abrange a matr. 48.606). CONDIÇOES:Não tem. CND
+          VALOR:R$.58.337,71 -(abrange a matr. 48.606). CONDIÇOES: Não tem. CND
           DO INSS NO 367.824. --SISA NO 194.666/94, paga s/avaliação de
           R$.58.337,71 (abrange a matr. 48.606). Apresentada ao Agente
           Financeiro a certidão de quitação de Tributos Federais. O referido é
