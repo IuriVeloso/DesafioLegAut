@@ -30,7 +30,7 @@ function App() {
         span.addEventListener('click', () => deleteSpan(span, index), false);
       }
     },
-    [post]
+    [post, deleteSpan]
   );
 
   useEffect(() => {
@@ -41,13 +41,13 @@ function App() {
     if (contagem.length > 1) {
       const index = post.findIndex(p => p.tagNote === nextTag);
       const span = document.getElementById(post[index].token);
-      const newText = document.createTextNode(span.firstChild.nodeValue);
+      const newText = document.createTextNode(`${span.id} `);
       text.insertBefore(newText, span);
       span.parentNode.removeChild(span);
       post.splice(index, 1);
     }
     setNextTag('');
-  }, [post]);
+  }, [post, addRemover]);
 
   useEffect(() => {
     const tagStorage = localStorage.getItem('tag');
@@ -106,6 +106,7 @@ function App() {
     for (; i <= tokens.indexOf(tokens[tokens.length - 1]); i += 1) {
       afterSpan = `${afterSpan + tokens[i]} `;
     }
+
     const newHTML = document.createElement('SPAN');
     const newSpan = document.createTextNode(span);
 
